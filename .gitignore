@@ -1,12 +1,23 @@
 # Logs
 logs
 *.log
-backend/logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Runtime logs are ignored by default; keep only curated trace samples.
+!backend/logs/
+backend/logs/*
+!backend/logs/traces/
+backend/logs/traces/*
+!backend/logs/traces/3a7b69e624f84acc8fda7095e7949655.jsonl
+!backend/logs/traces/3a7b69e624f84acc8fda7095e7949655.md
+!backend/logs/traces/9ca1b55f149643ea94fb7ab713143fc9.jsonl
+!backend/logs/traces/9ca1b55f149643ea94fb7ab713143fc9.md
+!backend/logs/traces/f210563ce2e64b0b804d99cb7e8a22e2.jsonl
+!backend/logs/traces/f210563ce2e64b0b804d99cb7e8a22e2.md
 
 node_modules
 dist
