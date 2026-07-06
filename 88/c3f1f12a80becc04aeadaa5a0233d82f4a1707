@@ -1,0 +1,67 @@
+.gitignore
+  s_bb39c54276816d::t_ac131162bf34cf 10-20 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a4b8d3786b270c36a5c8feb","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[10,20]}]}]}
+  s_bb39c54276816d::t_7920e3d1c1b7c2 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "88c3f1f12a80becc04aeadaa5a0233d82f4a1707",
+  "prompts": {},
+  "sessions": {
+    "s_bb39c54276816d": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a48787b86b270c36a5c7de5",
+        "model": "gpt-5.5__max"
+      },
+      "human_author": "shiliming.jy <shiliming.jy@bytedance.com>"
+    }
+  },
+  "attestation_metadata": {
+    ".gitignore": [
+      {
+        "hash": "s_bb39c54276816d::t_ac131162bf34cf",
+        "line_ranges": [
+          {
+            "Range": [
+              10,
+              20
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a4b8d3786b270c36a5c8feb",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  10,
+                  20
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "s_bb39c54276816d": {
+      "tool": "trae",
+      "conversation_id": "6a48787b86b270c36a5c7de5",
+      "session_id": "6a48787b86b270c36a5c7de5",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_bb39c54276816d::t_ac131162bf34cf": {
+      "tool": "trae",
+      "conversation_id": "6a48787b86b270c36a5c7de5",
+      "session_id": "6a48787b86b270c36a5c7de5",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
