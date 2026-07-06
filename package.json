@@ -1,0 +1,12 @@
+{
+  "name": "routepilot-v1",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "check:frontend": "npm --prefix frontend run check"
+  }
+}
