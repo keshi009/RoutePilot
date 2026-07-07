@@ -209,8 +209,8 @@ LLM 只在 Step 7 使用，相关文件：
 重要约束：
 
 - LLM 不决定路线节点、不改顺序、不发明商家、时间、距离、优惠或订单状态。
-- LLM 输出 JSON 不合法、模型不可用、无 key、超时等情况都会降级模板文案，主流程不失败。
-- 自动化测试通过 `ROUTEPILOT_TEST_FAKE_LLM=1` 固定走测试文案。
+- LLM 输出 JSON 不合法、模型不可用、配置缺失、超时等情况都会降级模板文案，主流程不失败。
+- 自动化验证使用稳定的测试文案策略，避免模型波动影响主流程判断。
 
 ## API
 
@@ -255,97 +255,32 @@ trace 示例结构：
 {"record":"result","trace_id":"...","status":"success","failure_code":"","plan_id":"plan_xxx"}
 ```
 
-## 本地启动
+## 演示与验证说明
 
-### 后端
+当前版本已支持端到端演示：用户从订单列表页进入 AI 行程助手，系统完成入口判断、路线规划、进度展示、地图渲染、节点解释和动作记录。演示数据使用固定 mock 资源，便于稳定复现同一条规划链路。
 
-```bash
-cd /Users/bytedance/hello-agents/RoutePilot_V1/backend
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-PYTHONPATH=. .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8011
-```
+运行配置已经做了环境隔离：
 
-如果 `8000` 未被占用，也可以使用 `--port 8000`。当前联调环境中 `8000` 被其他服务占用，所以前后端联调用 `8011`。
+- 真实模型密钥不进入代码仓库。
+- LLM 接入通过标准 compatible-mode 配置管理。
+- 没有模型配置时，主流程仍会使用模板文案兜底，路线事实不受影响。
+- 前后端可独立部署，也可在统一演示环境中联调。
 
-### 前端
+自动化验证覆盖以下内容：
 
-```bash
-cd /Users/bytedance/hello-agents/RoutePilot_V1/frontend
-npm install
-VITE_API_BASE_URL=http://127.0.0.1:8011 npm run dev -- --host 127.0.0.1 --port 5173
-```
+- API 契约与已移除接口检查。
+- 成功规划路径，包括入口、SSE 进度、最终行程结构。
+- 失败路径，包括无订单、时间不可用、候选节点不足等场景。
+- 硬规则、打分公式、路线求解和启发式兜底。
+- 前端类型检查与生产构建。
 
-打开：
+人工验收重点建议看：
 
-```text
-http://127.0.0.1:5173/
-```
-
-### LLM 环境变量
-
-根目录 `.env` 或 `backend/.env` 可配置：
-
-```bash
-DASHSCOPE_API_KEY=你的 DashScope API Key
-DASHSCOPE_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
-DASHSCOPE_MODEL=qwen-plus
-```
-
-或 OpenAI-compatible：
-
-```bash
-ROUTEPILOT_LLM_API_KEY=你的 API Key
-ROUTEPILOT_LLM_BASE_URL=https://api.openai.com/v1
-ROUTEPILOT_LLM_MODEL=gpt-4o-mini
-```
-
-`DASHSCOPE_API_KEY` 存在时优先使用 DashScope compatible-mode。不要提交真实 key。
-
-## 测试与验证
-
-### 后端单测
-
-```bash
-cd backend
-PYTHONPATH=. .venv/bin/python -m pytest -q
-```
-
-注意：当前 `.venv/bin/pytest` 的 shebang 可能指向旧路径，建议使用 `.venv/bin/python -m pytest`。
-
-覆盖内容：
-
-- API 注册与返回契约
-- 成功规划路径
-- 无订单、无可用时间、无 POI 等失败路径
-- 规则函数
-- 打分函数
-- OR-Tools 与 heuristic 路线求解路径
-
-### 前端检查
-
-```bash
-cd frontend
-npm run check
-npm run build
-```
-
-### 手工联调
-
-```bash
-curl -sS http://127.0.0.1:8011/api/trip-assistant/entry
-curl -sS -X POST http://127.0.0.1:8011/api/trip-plans \
-  -H 'Content-Type: application/json' \
-  -d '{"userId":"u_mock_001","targetWindow":"nearest_weekend","includeDebug":true}'
-```
-
-失败场景：
-
-```bash
-curl -sS -X POST http://127.0.0.1:8011/api/trip-plans \
-  -H 'Content-Type: application/json' \
-  -d '{"userId":"u_mock_001","targetWindow":"nearest_weekend","scenario":"no_orders"}'
-```
+- 订单列表页是否正确展示 AI 入口。
+- 规划页是否只展示当前进度状态。
+- 推荐路线是否包含主订单且满足 2-5 节点、5 小时以内的硬约束。
+- 人读 trace 是否能解释“为什么选这个订单、为什么选这些 POI、路线是否通过约束”。
+- LLM 文案是否只描述已验证路线事实，不编造优惠、时间或商家信息。
 
 ## 前端模块说明
 
@@ -379,7 +314,7 @@ curl -sS -X POST http://127.0.0.1:8011/api/trip-plans \
 | 文件 | 说明 |
 |---|---|
 | `backend/app/__init__.py` | Python 包标记文件，无业务逻辑 |
-| `backend/app/config.py` | Pydantic Settings 配置入口，加载 `.env`，提供 LLM、stream、timeout 等配置 |
+| `backend/app/config.py` | Pydantic Settings 配置入口，统一管理 LLM、stream、timeout 等运行配置 |
 | `backend/app/logging_setup.py` | 初始化 loguru，输出控制台日志和 `backend/logs/runtime.jsonl` |
 | `backend/app/main.py` | FastAPI app 入口，配置 CORS，注册聚合路由 |
 
@@ -474,7 +409,6 @@ curl -sS -X POST http://127.0.0.1:8011/api/trip-plans \
 ```text
 RoutePilot_V1/
   README.md
-  .env.example
   backend/
     requirements.txt
     pytest.ini
